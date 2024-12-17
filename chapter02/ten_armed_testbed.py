@@ -25,8 +25,8 @@ class Bandit:
     # @UCB_param: if not None, use UCB algorithm to select action
     # @gradient: if True, use gradient based bandit algorithm
     # @gradient_baseline: if True, use average reward as baseline for gradient based bandit algorithm
-    def __init__(self, k_arm=10, epsilon=0., initial=0., step_size=0.1, sample_averages=False, UCB_param=None,
-                 gradient=False, gradient_baseline=False, true_reward=0.):
+    def __init__(self, k_arm=10, epsilon=0., initial=0., step_size=0.1, sample_averages=False,
+                 UCB_param=None, gradient=False, gradient_baseline=False, true_reward=0.):
         self.k = k_arm
         self.step_size = step_size
         self.sample_averages = sample_averages
@@ -50,26 +50,31 @@ class Bandit:
         # # of chosen times for each action
         self.action_count = np.zeros(self.k)
 
+        # bandit with highest mean
         self.best_action = np.argmax(self.q_true)
 
         self.time = 0
 
     # get an action for this bandit
     def act(self):
+        # epsilon-greedy action
         if np.random.rand() < self.epsilon:
             return np.random.choice(self.indices)
 
+        # exploration function action
         if self.UCB_param is not None:
             UCB_estimation = self.q_estimation + \
                 self.UCB_param * np.sqrt(np.log(self.time + 1) / (self.action_count + 1e-5))
             q_best = np.max(UCB_estimation)
             return np.random.choice(np.where(UCB_estimation == q_best)[0])
 
+        # softmax action
         if self.gradient:
             exp_est = np.exp(self.q_estimation)
             self.action_prob = exp_est / np.sum(exp_est)
             return np.random.choice(self.indices, p=self.action_prob)
 
+        # greedy action
         q_best = np.max(self.q_estimation)
         return np.random.choice(np.where(self.q_estimation == q_best)[0])
 
