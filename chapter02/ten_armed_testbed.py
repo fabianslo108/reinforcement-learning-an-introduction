@@ -61,14 +61,14 @@ class Bandit:
         if np.random.rand() < self.epsilon:
             return np.random.choice(self.indices)
 
-        # exploration function action
+        # Upper-confidence-bound exploration function action
         if self.UCB_param is not None:
             UCB_estimation = self.q_estimation + \
                 self.UCB_param * np.sqrt(np.log(self.time + 1) / (self.action_count + 1e-5))
             q_best = np.max(UCB_estimation)
             return np.random.choice(np.where(UCB_estimation == q_best)[0])
 
-        # softmax action
+        # action preference
         if self.gradient:
             exp_est = np.exp(self.q_estimation)
             self.action_prob = exp_est / np.sum(exp_est)
@@ -96,6 +96,8 @@ class Bandit:
                 baseline = self.average_reward
             else:
                 baseline = 0
+            # q of action taken increased if reward>baseline, decreased otherwise
+            # q_s for other actions move in the opposite direction
             self.q_estimation += self.step_size * (reward - baseline) * (one_hot - self.action_prob)
         else:
             # update estimation with constant step size
@@ -155,6 +157,7 @@ def figure_2_2(runs=2000, time=1000):
 
 def figure_2_3(runs=2000, time=1000):
     bandits = []
+    # Optimistic initial value
     bandits.append(Bandit(epsilon=0, initial=5, step_size=0.1))
     bandits.append(Bandit(epsilon=0.1, initial=0, step_size=0.1))
     best_action_counts, _ = simulate(runs, time, bandits)
@@ -241,9 +244,10 @@ def figure_2_6(runs=2000, time=1000):
 
 
 if __name__ == '__main__':
-    figure_2_1()
-    figure_2_2()
-    figure_2_3()
-    figure_2_4()
-    figure_2_5()
-    figure_2_6()
+    #figure_2_1()
+    #figure_2_2()
+    #figure_2_3()
+    #figure_2_4()
+    #figure_2_5()
+    #figure_2_6()
+
