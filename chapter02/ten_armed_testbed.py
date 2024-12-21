@@ -25,8 +25,8 @@ class Bandit:
     # @UCB_param: if not None, use UCB algorithm to select action
     # @gradient: if True, use gradient based bandit algorithm
     # @gradient_baseline: if True, use average reward as baseline for gradient based bandit algorithm
-    def __init__(self, k_arm=10, epsilon=0., initial=0., step_size=0.1, sample_averages=False, UCB_param=None,
-                 gradient=False, gradient_baseline=False, true_reward=0.):
+    def __init__(self, k_arm=10, epsilon=0., initial=0., step_size=0.1, sample_averages=False,
+                 UCB_param=None, gradient=False, gradient_baseline=False, true_reward=0.):
         self.k = k_arm
         self.step_size = step_size
         self.sample_averages = sample_averages
@@ -50,17 +50,16 @@ class Bandit:
         # # of chosen times for each action
         self.action_count = np.zeros(self.k)
 
+        # bandit with highest mean
         self.best_action = np.argmax(self.q_true)
 
         self.time = 0
 
     # get an action for this bandit
     def act(self):
-        # Explore epsilon percent of times
         if np.random.rand() < self.epsilon:
             return np.random.choice(self.indices)
 
-        # Or use UCB to choose best action
         if self.UCB_param is not None:
             UCB_estimation = self.q_estimation + \
                 self.UCB_param * np.sqrt(np.log(self.time + 1) / (self.action_count + 1e-5))
@@ -68,13 +67,11 @@ class Bandit:
             # A bit contrived but deals with ties
             return np.random.choice(np.where(UCB_estimation == q_best)[0])
 
-        # Or use softmax
         if self.gradient:
             exp_est = np.exp(self.q_estimation)
             self.action_prob = exp_est / np.sum(exp_est)
             return np.random.choice(self.indices, p=self.action_prob)
 
-        # Otherwise take Max Q action
         q_best = np.max(self.q_estimation)
         return np.random.choice(np.where(self.q_estimation == q_best)[0])
 
@@ -96,6 +93,8 @@ class Bandit:
                 baseline = self.average_reward
             else:
                 baseline = 0
+            # q of action taken increased if reward>baseline, decreased otherwise
+            # q_s for other actions move in the opposite direction
             self.q_estimation += self.step_size * (reward - baseline) * (one_hot - self.action_prob)
         else:
             # update estimation with constant step size
@@ -165,6 +164,7 @@ def figure_2_2(runs=2000, time=1000):
 
 def figure_2_3(runs=2000, time=1000):
     bandits = []
+    # Optimistic initial value
     bandits.append(Bandit(epsilon=0, initial=5, step_size=0.1))
     bandits.append(Bandit(epsilon=0.1, initial=0, step_size=0.1))
     best_action_counts, _ = simulate(runs, time, bandits)
@@ -251,9 +251,9 @@ def figure_2_6(runs=2000, time=1000):
 
 
 if __name__ == '__main__':
-    #figure_2_1()
+    figure_2_1()
     figure_2_2()
-    # figure_2_3()
-    # figure_2_4()
-    # figure_2_5()
-    # figure_2_6()
+    figure_2_3()
+    figure_2_4()
+    figure_2_5()
+    figure_2_6()
