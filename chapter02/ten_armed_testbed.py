@@ -44,7 +44,7 @@ class Bandit:
         # real reward for each action
         self.q_true = np.random.randn(self.k) + self.true_reward
 
-        # estimation for each action
+        # estimation for each action value
         self.q_estimation = np.zeros(self.k) + self.initial
 
         # # of chosen times for each action
@@ -56,20 +56,25 @@ class Bandit:
 
     # get an action for this bandit
     def act(self):
+        # Explore epsilon percent of times
         if np.random.rand() < self.epsilon:
             return np.random.choice(self.indices)
 
+        # Or use UCB to choose best action
         if self.UCB_param is not None:
             UCB_estimation = self.q_estimation + \
                 self.UCB_param * np.sqrt(np.log(self.time + 1) / (self.action_count + 1e-5))
             q_best = np.max(UCB_estimation)
+            # A bit contrived but deals with ties
             return np.random.choice(np.where(UCB_estimation == q_best)[0])
 
+        # Or use softmax
         if self.gradient:
             exp_est = np.exp(self.q_estimation)
             self.action_prob = exp_est / np.sum(exp_est)
             return np.random.choice(self.indices, p=self.action_prob)
 
+        # Otherwise take Max Q action
         q_best = np.max(self.q_estimation)
         return np.random.choice(np.where(self.q_estimation == q_best)[0])
 
@@ -99,6 +104,15 @@ class Bandit:
 
 
 def simulate(runs, time, bandits):
+    '''
+    Args:
+        runs: number of experiments per bandit
+        time: number of actions taken in each experiment
+        bandits: list of bandit environments
+    
+    Returns:
+        means over experiments of optimal action counts and rewads over experiment time
+    '''
     rewards = np.zeros((len(bandits), runs, time))
     best_action_counts = np.zeros(rewards.shape)
     for i, bandit in enumerate(bandits):
@@ -119,7 +133,8 @@ def figure_2_1():
     plt.violinplot(dataset=np.random.randn(200, 10) + np.random.randn(10))
     plt.xlabel("Action")
     plt.ylabel("Reward distribution")
-    plt.savefig('../images/figure_2_1.png')
+    plt.savefig('lsfigure_2_1.png')
+    #plt.show()
     plt.close()
 
 
@@ -144,7 +159,7 @@ def figure_2_2(runs=2000, time=1000):
     plt.ylabel('% optimal action')
     plt.legend()
 
-    plt.savefig('../images/figure_2_2.png')
+    plt.savefig('figure_2_2.png')
     plt.close()
 
 
@@ -160,7 +175,7 @@ def figure_2_3(runs=2000, time=1000):
     plt.ylabel('% optimal action')
     plt.legend()
 
-    plt.savefig('../images/figure_2_3.png')
+    plt.savefig('figure_2_3.png')
     plt.close()
 
 
@@ -176,7 +191,7 @@ def figure_2_4(runs=2000, time=1000):
     plt.ylabel('Average reward')
     plt.legend()
 
-    plt.savefig('../images/figure_2_4.png')
+    plt.savefig('figure_2_4.png')
     plt.close()
 
 
@@ -198,7 +213,7 @@ def figure_2_5(runs=2000, time=1000):
     plt.ylabel('% Optimal action')
     plt.legend()
 
-    plt.savefig('../images/figure_2_5.png')
+    plt.savefig('figure_2_5.png')
     plt.close()
 
 
@@ -231,14 +246,14 @@ def figure_2_6(runs=2000, time=1000):
     plt.ylabel('Average reward')
     plt.legend()
 
-    plt.savefig('../images/figure_2_6.png')
+    plt.savefig('figure_2_6.png')
     plt.close()
 
 
 if __name__ == '__main__':
-    figure_2_1()
+    #figure_2_1()
     figure_2_2()
-    figure_2_3()
-    figure_2_4()
-    figure_2_5()
-    figure_2_6()
+    # figure_2_3()
+    # figure_2_4()
+    # figure_2_5()
+    # figure_2_6()

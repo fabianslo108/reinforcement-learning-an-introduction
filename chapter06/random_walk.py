@@ -34,22 +34,23 @@ ACTION_RIGHT = 1
 # @alpha: step size
 # @batch: whether to update @values
 def temporal_difference(values, alpha=0.1, batch=False):
+    # start at center
     state = 3
     trajectory = [state]
     rewards = [0]
     while True:
         old_state = state
-        if np.random.binomial(1, 0.5) == ACTION_LEFT:
-            state -= 1
-        else:
-            state += 1
-        # Assume all rewards are 0
+        # random coin
+        state = state-1 if (np.random.binomial(1, 0.5)==ACTION_LEFT) else state+1
+        # Assume all rewards are 0 (VALUE[6] if fixed at 1 and never updated)
         reward = 0
         trajectory.append(state)
         # TD update
         if not batch:
+            # TD update
             values[old_state] += alpha * (reward + values[state] - values[old_state])
-        if state == 6 or state == 0:
+        if state==6 or state==0:
+            # Terminal states
             break
         rewards.append(reward)
     return trajectory, rewards
@@ -64,10 +65,7 @@ def monte_carlo(values, alpha=0.1, batch=False):
     # if end up with left terminal state, all returns are 0
     # if end up with right terminal state, all returns are 1
     while True:
-        if np.random.binomial(1, 0.5) == ACTION_LEFT:
-            state -= 1
-        else:
-            state += 1
+        state = state-1 if (np.random.binomial(1, 0.5)==ACTION_LEFT) else state+1
         trajectory.append(state)
         if state == 6:
             returns = 1.0
@@ -198,4 +196,4 @@ def figure_6_2():
 
 if __name__ == '__main__':
     example_6_2()
-    figure_6_2()
+    #figure_6_2()
